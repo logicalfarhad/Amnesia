@@ -5,16 +5,14 @@
  */
 package data;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import dictionary.DictionaryString;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jsoninterface.View;
-import data.Pair;
 
 /**
  *

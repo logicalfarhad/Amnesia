@@ -18,43 +18,22 @@
  */
 package hierarchy.distinct;
 
-import exceptions.LimitException;
 import controller.AppCon;
 import data.Data;
 import data.DiskData;
-import data.RelSetData;
-import data.SETData;
 import dictionary.DictionaryString;
+import exceptions.LimitException;
 import graph.Edge;
 import graph.Graph;
 import graph.Node;
 import hierarchy.Hierarchy;
-import static hierarchy.Hierarchy.online_limit;
-import static hierarchy.Hierarchy.online_version;
 import hierarchy.NodeStats;
-import hierarchy.ranges.RangeDouble;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jsoninterface.View;
 
 
 /**
@@ -136,13 +115,10 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
             findAllParents();
             br.close();
             in.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(HierarchyImplDouble.class.getName()).log(Level.SEVERE, null, ex);
+            fstream.close();
         } catch (IOException ex) {
             Logger.getLogger(HierarchyImplDouble.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //System.out.println(" i am here");
-        //findAllParents();
     }
 
     private void loadHierarchy() throws IOException, LimitException{
@@ -150,7 +126,7 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
         int curLevel = this.height - 1;
         
         while ((line = br.readLine()) != null) {
-            String tokens[] = line.split(" ");
+            String[] tokens = line.split(" ");
             if(line.trim().isEmpty()){
                 curLevel--;
                 continue;
@@ -178,7 +154,7 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
                     
                     //level 0 and isChild == false then set as root 
                     if(curLevel - 1 == 0){
-                        root = new Double(tokens[0]);
+                        root = Double.valueOf(tokens[0]);
                         this.stats.put(root, new NodeStats(0));
                         counterNodes ++;
                         if(AppCon.os.equals(online_version) && counterNodes > online_limit){
@@ -890,22 +866,7 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
            // System.out.println("new height = " + this.height);
             
         }
-        
-        /*System.out.println("after");
-        for (Map.Entry<Double, NodeStats> entry : this.stats.entrySet()) {
-            System.out.println(entry.getKey()+" : "+entry.getValue().level +":"+entry.getValue().weight);
-        } */ 
-        
-        
-        /*System.out.println("after");
-        for (Map.Entry<Double, List<Double>> entry : this.children.entrySet()) {
-            System.out.println(entry.getKey()+" : "+entry.getValue().toString());
-            List <Double> d = entry.getValue();
-                for( int i = 0 ; i < d.size() ; i ++  ){
-                    System.out.println(d.get(i) + "level:" + this.getLevel(d.get(i)) );
-                }
-        }*/
-        
+
         return m;
     }
     
@@ -1177,24 +1138,14 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
     public Graph getGraph(String node, int nodeLevel) {
         Graph graph = new Graph();
         
-        Node n = null;
-        Edge e = null;
-        ArrayList<String> nodes = null;
-        boolean FLAG = false;
-        String parent = null;
-        List<Double> nodeChilds = null;
-        Double nodeDouble = null;
-        String color = null;
-        String label = null;
-        
-        //System.out.println("roottttttttttttttttttttttttttt = " + root);
-        
-        //System.out.println("node =" + node + "\t level = "+ nodeLevel );
-        
-       
-        
-        int counter = 0;
-        
+        Node n;
+        Edge e;
+        List<Double> nodeChilds;
+        Double nodeDouble;
+        String color;
+        String label;
+
+
         if (nodesType.equals("double")){
             if ( !node.equals("null") && !node.equals("(null)") && !node.equals("") && nodeLevel != 0 ){
             
@@ -1224,12 +1175,10 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
                                 graph.setNode(n);
                                 e = new Edge(nodeDouble+"",nodeChilds.get(j)+"");
                                 graph.setEdge(e);
-                                counter ++;
                             }
                         }
-                        else{
-                           // System.out.println("noChildren");
-                        }
+                        // System.out.println("noChildren");
+
                         nodeDouble = this.parents.get(nodeDouble);
                         //System.out.println("node = " + node);
                     }
@@ -1243,30 +1192,26 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
                     for (int i = nodeLevel ; i >= 0 ; i --){
                         nodeChilds = this.children.get(nodeDouble);
                         if ( nodeChilds != null){
-                            for (int j = 0 ; j < nodeChilds.size() ; j ++){
-                                if (this.getLevel(nodeChilds.get(j)) == this.height -1){
+                            for (Double nodeChild : nodeChilds) {
+                                if (this.getLevel(nodeChild) == this.height - 1) {
                                     color = "red";
-                                }
-                                else{
+                                } else {
                                     color = null;
                                 }
-                             
-                                if (nodeChilds.get(j).intValue() == 2147483646 || nodeChilds.get(j).isNaN()){
+
+                                if (nodeChild.intValue() == 2147483646 || nodeChild.isNaN()) {
                                     label = "(null)";
+                                } else {
+                                    label = nodeChild + "";
                                 }
-                                else{
-                                    label = nodeChilds.get(j)+"";
-                                }
-                                n = new Node(nodeChilds.get(j)+"",label,i+1,color, this.hierarchyType + "," +this.nodesType);  
+                                n = new Node(nodeChild + "", label, i + 1, color, this.hierarchyType + "," + this.nodesType);
                                 graph.setNode(n);
-                                e = new Edge(nodeDouble+"",nodeChilds.get(j)+"");
+                                e = new Edge(nodeDouble + "", nodeChild + "");
                                 graph.setEdge(e);
-                                counter ++;
                             }
                         }
-                        else{
-                            //System.out.println("noChildren");
-                        }
+                        //System.out.println("noChildren");
+
                         nodeDouble = this.parents.get(nodeDouble);
                         //System.out.println("node = " + node);
                     }
@@ -1282,31 +1227,27 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
                 for (int i = nodeLevel ; i >= 0 ; i --){
                         nodeChilds = this.children.get(nodeDouble);
                         if ( nodeChilds != null){
-                            for (int j = 0 ; j < nodeChilds.size() ; j ++){
-                                if (this.getLevel(nodeChilds.get(j)) == this.height -1){
+                            for (Double nodeChild : nodeChilds) {
+                                if (this.getLevel(nodeChild) == this.height - 1) {
                                     color = "red";
-                                }
-                                else{
+                                } else {
                                     color = null;
                                 }
-                              
-                                if (nodeChilds.get(j).intValue() == 2147483646 || nodeChilds.get(j).isNaN()){
+
+                                if (nodeChild.intValue() == 2147483646 || nodeChild.isNaN()) {
                                     label = "(null)";
+                                } else {
+                                    label = nodeChild + "";
                                 }
-                                else{
-                                    label = nodeChilds.get(j)+"";
-                                }
-                                n = new Node(nodeChilds.get(j)+"",label,i+1,color,this.hierarchyType + "," +this.nodesType);  
+                                n = new Node(nodeChild + "", label, i + 1, color, this.hierarchyType + "," + this.nodesType);
                                 graph.setNode(n);
-                                e = new Edge(nodeDouble+"",nodeChilds.get(j)+"");
+                                e = new Edge(nodeDouble + "", nodeChild + "");
                                 graph.setEdge(e);
-                                counter ++;
                             }
                         }
-                        else{
-                            //System.out.println("noChildren");
-                        }
-                        nodeDouble = this.parents.get(nodeDouble);
+                        //System.out.println("noChildren");
+
+                    nodeDouble = this.parents.get(nodeDouble);
                         //System.out.println("node = " + node);
                     }
                     n = new Node(root+"",root+"",0,null,this.hierarchyType + "," +this.nodesType);
@@ -1326,31 +1267,27 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
                     for (int i = nodeLevel ; i >= 0 ; i --){
                         nodeChilds = this.children.get(nodeDouble);
                         if ( nodeChilds != null){
-                            for (int j = 0 ; j < nodeChilds.size() ; j ++){
-                                
-                                if (this.getLevel(nodeChilds.get(j)) == this.height -1){
+                            for (Double nodeChild : nodeChilds) {
+
+                                if (this.getLevel(nodeChild) == this.height - 1) {
                                     color = "red";
-                                }
-                                else{
+                                } else {
                                     color = null;
                                 }
-                                
-                                if (nodeChilds.get(j).intValue() == 2147483646 || nodeChilds.get(j).isNaN()){
+
+                                if (nodeChild.intValue() == 2147483646 || nodeChild.isNaN()) {
                                     label = "(null)";
+                                } else {
+                                    label = nodeChild.intValue() + "";
                                 }
-                                else{
-                                    label = nodeChilds.get(j).intValue()+"";
-                                }
-                                n = new Node(nodeChilds.get(j).intValue()+"",label,i+1,color,this.hierarchyType + "," +this.nodesType);  
+                                n = new Node(nodeChild.intValue() + "", label, i + 1, color, this.hierarchyType + "," + this.nodesType);
                                 graph.setNode(n);
-                                e = new Edge(nodeDouble.intValue()+"",nodeChilds.get(j).intValue()+"");
+                                e = new Edge(nodeDouble.intValue() + "", nodeChild.intValue() + "");
                                 graph.setEdge(e);
-                                counter ++;
                             }
                         }
-                        else{
-                            //System.out.println("noChildren");
-                        }
+                        //System.out.println("noChildren");
+
                         nodeDouble = this.parents.get(nodeDouble);
                     }
                     n = new Node(root.intValue()+"",root.intValue()+"",0,null,this.hierarchyType + "," +this.nodesType);
@@ -1365,30 +1302,26 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
                     for (int i = nodeLevel ; i >= 0 ; i --){
                         nodeChilds = this.children.get(nodeDouble);
                         if ( nodeChilds != null){
-                            for (int j = 0 ; j < nodeChilds.size() ; j ++){
-                                if (this.getLevel(nodeChilds.get(j)) == this.height -1){
+                            for (Double nodeChild : nodeChilds) {
+                                if (this.getLevel(nodeChild) == this.height - 1) {
                                     color = "red";
-                                }
-                                else{
+                                } else {
                                     color = null;
                                 }
-                                
-                                if (nodeChilds.get(j).intValue() == 2147483646 || nodeChilds.get(j).isNaN()){
+
+                                if (nodeChild.intValue() == 2147483646 || nodeChild.isNaN()) {
                                     label = "(null)";
+                                } else {
+                                    label = nodeChild.intValue() + "";
                                 }
-                                else{
-                                    label = nodeChilds.get(j).intValue()+"";
-                                }
-                                n = new Node(nodeChilds.get(j).intValue()+"",label,i+1,color,this.hierarchyType + "," +this.nodesType);  
+                                n = new Node(nodeChild.intValue() + "", label, i + 1, color, this.hierarchyType + "," + this.nodesType);
                                 graph.setNode(n);
-                                e = new Edge(nodeDouble.intValue()+"",nodeChilds.get(j).intValue()+"");
+                                e = new Edge(nodeDouble.intValue() + "", nodeChild.intValue() + "");
                                 graph.setEdge(e);
-                                counter ++;
                             }
                         }
-                        else{
-                           // System.out.println("noChildren");
-                        }
+                        // System.out.println("noChildren");
+
                         nodeDouble = this.parents.get(nodeDouble);
                     }
                     n = new Node(root.intValue()+"",root.intValue()+"",0,null,this.hierarchyType + "," +this.nodesType);
@@ -1404,32 +1337,28 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
                 for (int i = nodeLevel ; i >= 0 ; i --){
                         nodeChilds = this.children.get(nodeDouble);
                         if ( nodeChilds != null){
-                            for (int j = 0 ; j < nodeChilds.size() ; j ++){
-                                if (this.getLevel(nodeChilds.get(j)) == this.height -1){
+                            for (Double nodeChild : nodeChilds) {
+                                if (this.getLevel(nodeChild) == this.height - 1) {
                                     color = "red";
-                                }
-                                else{
+                                } else {
                                     color = null;
                                 }
-                                
-                                if (nodeChilds.get(j).intValue() == 2147483646 || nodeChilds.get(j).isNaN()){
+
+                                if (nodeChild.intValue() == 2147483646 || nodeChild.isNaN()) {
                                     label = "(null)";
+                                } else {
+                                    label = nodeChild.intValue() + "";
                                 }
-                                else{
-                                    label = nodeChilds.get(j).intValue()+"";
-                                }
-                                n = new Node(nodeChilds.get(j).intValue()+"",label,i+1,color,this.hierarchyType + "," +this.nodesType);  
+                                n = new Node(nodeChild.intValue() + "", label, i + 1, color, this.hierarchyType + "," + this.nodesType);
                                 graph.setNode(n);
-                                e = new Edge(nodeDouble.intValue()+"",nodeChilds.get(j).intValue()+"");
+                                e = new Edge(nodeDouble.intValue() + "", nodeChild.intValue() + "");
                                 graph.setEdge(e);
-                                counter ++;
                             }
                         }
-                        else{
-                            //System.out.println("noChildren");
-                        }
-                        
-                        nodeDouble = this.parents.get(nodeDouble);
+                        //System.out.println("noChildren");
+
+
+                    nodeDouble = this.parents.get(nodeDouble);
                         
                     }
                     n = new Node(root.intValue()+"",root.intValue()+"",0,null,this.hierarchyType + "," +this.nodesType);
@@ -1498,29 +1427,27 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
         }
         else{
             double[][] dataset = d.getDataSet();
-            for(int i=0; i<dataset.length; i++){
-                Double parent = this.parents.get(dataset[i][col]);
-                System.out.println("value "+dataset[i][col]+" parent "+parent);
-                if(parent==null){
-                    System.out.println("check root "+(dataset[i][col] != root.doubleValue()));
-                    if(dataset[i][col] != root.doubleValue()){
-                        if(Double.isNaN(dataset[i][col]) || dataset[i][col] == 2147483646.0){
-                            if(this.getParent(2147483646.0) == null){
-                               return "Node (null) for spaces values and non-Numeric values, is not defined in the hierarchy \""+this.name+"\"" ;
+            for (double[] doubles : dataset) {
+                Double parent = this.parents.get(doubles[col]);
+                System.out.println("value " + doubles[col] + " parent " + parent);
+                if (parent == null) {
+                    System.out.println("check root " + (doubles[col] != root));
+                    if (doubles[col] != root) {
+                        if (Double.isNaN(doubles[col]) || doubles[col] == 2147483646.0) {
+                            if (this.getParent(2147483646.0) == null) {
+                                return "Node (null) for spaces values and non-Numeric values, is not defined in the hierarchy \"" + this.name + "\"";
                             }
-                        }
-                        else{
+                        } else {
                             System.out.println("Mapinei edv metas to check");
                             Object value;
                             String type = d.getColNamesType().get(col);
-                            if(type.equals("int")){
-                                value = (int)dataset[i][col];
+                            if (type.equals("int")) {
+                                value = (int) doubles[col];
+                            } else {
+                                value = doubles[col];
                             }
-                            else{
-                                value = dataset[i][col];
-                            }
-                            System.out.println("Value \""+value+"\" in "+d.getColumnByPosition(col)+" does not set in the hierarchy "+this.name+" prin to return ");
-                            return "Value \""+value+"\" in "+d.getColumnByPosition(col)+" column is not defined in the hierarchy \""+this.name+"\"";
+                            System.out.println("Value \"" + value + "\" in " + d.getColumnByPosition(col) + " does not set in the hierarchy " + this.name + " prin to return ");
+                            return "Value \"" + value + "\" in " + d.getColumnByPosition(col) + " column is not defined in the hierarchy \"" + this.name + "\"";
                         }
                     }
                 }
@@ -1667,8 +1594,6 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
             while(!n1.equals(n2)){
                 n1 = this.getParent(n1);
                 n2 = this.getParent(n2);
-                height2 = this.getLevel(n2.doubleValue());
-                height1 = this.getLevel(n1.doubleValue());
             }
             
 //            System.out.println("Common anc "+n1+" with height "+height1);
@@ -1686,9 +1611,4 @@ public class HierarchyImplDouble implements Hierarchy<Double> {
     public void clearAprioriStructures() {
         allParentIds = new HashMap();
     }
-
-   
-    
-   
-    
 }   

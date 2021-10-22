@@ -5,10 +5,8 @@
  */
 package graph;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import data.Data;
 import data.DiskData;
-import jsoninterface.View;
 
 /**
  *

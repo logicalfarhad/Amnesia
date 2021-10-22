@@ -6,8 +6,9 @@
 package solutions;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import java.util.ArrayList;
 import jsoninterface.View;
+
+import java.util.ArrayList;
 
 /**
  *
