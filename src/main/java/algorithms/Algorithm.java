@@ -32,12 +32,12 @@ import hierarchy.Hierarchy;
 
 public interface Algorithm {
     
-    public void setDataset(Data dataset);
-    public void setHierarchies(Map<Integer, Hierarchy> hierarchies);
-    public void setArguments(Map<String, Integer> arguments);
-    public void anonymize();
-    public Object getResultSet();
-    public Graph getLattice();
-    public boolean isAnonymousResult(LatticeNode node);
+    void setDataset(Data dataset);
+    void setHierarchies(Map<Integer, Hierarchy> hierarchies);
+    void setArguments(Map<String, Integer> arguments);
+    void anonymize();
+    Object getResultSet();
+    Graph getLattice();
+    boolean isAnonymousResult(LatticeNode node);
     
 }

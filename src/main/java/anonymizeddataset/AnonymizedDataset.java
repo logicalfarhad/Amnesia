@@ -39,7 +39,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 
 /**

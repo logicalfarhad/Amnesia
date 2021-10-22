@@ -65,14 +65,7 @@ public class FindSolutions {
                 transformation[0] = Integer.parseInt(node);
             }
         }
-        
-        //System.out.println("nodeeeeeeeeeeeeeeeeee = " + node);
-         
-       //transf = ((LatticeNode)node).getTransformation();
-        
-        //find statistics for eveery single QI
 
-        
         if(qids.length > 1){ 
             for(int i=0; i<qids.length; i++){
                 int[] curQids = new int[1];
@@ -129,71 +122,66 @@ public class FindSolutions {
         header = new SolutionHeader(specificQid, transformation, this.dataset);
         statistics = new SolutionStatistics(this.dataset.getDataLenght(),colNamesType);
 
-        
-        for(int line=0; line<length; line++){
+
+        for (double[] doubles : dataSet) {
             int count = 0;
             int j = 0;
-            
-            Object data[] = new Object[qids.length];
-            
-            for(int column=0; column<dataSet[0].length; column++){
-                
+
+            Object[] data = new Object[qids.length];
+
+            for (int column = 0; column < dataSet[0].length; column++) {
+
                 //System.out.println("dataSet[0].length = " + dataSet[0].length + "\tcolumn = " +column);
                 //System.out.println(" dataSet[line][column] = " +  dataSet[line][column]);
-                        
+
                 columnName = colNamesPosition.get(column);
                 boolean anonymizeColumn = false;
-                Hierarchy hierarchy = null;
+                Hierarchy hierarchy;
                 int level = 0;
-                
-                if((count < qids.length) && (qids[count] == column)){
+
+                if ((count < qids.length) && (qids[count] == column)) {
                     anonymizeColumn = true;
                     hierarchy = quasiIdentifiers.get(column);
                     level = (qids.length > 1) ? transformation[count] : transformation[whichQid];
-                    
+
                     count++;
-                }
-                else{
+                } else {
                     continue;
                 }
-                
-                if(colNamesType.get(column).contains("int")){
-                    
-                    data[j] = dataSet[line][column];
-                    if(anonymizeColumn && level > 0){
-                        data[j] = anonymizeValue(data[j], hierarchy, level);
-                    }
-                    
-                    if(data[j] instanceof Double){
-                        data[j] = ((Double)data[j]).intValue();
-                    }
-                    j++;
-                }
-                else if(colNamesType.get(column).contains("double")){
-                    
-                    data[j] = (double)dataSet[line][column];
-                    if(anonymizeColumn && level > 0){
-                        data[j] = anonymizeValue(data[j], hierarchy, level);
-                    }
-                    j++;
-                }
-                else{
 
-                    
-                    data[j] = dictionary.getIdToString((int)dataSet[line][column]);
-                    
-                    if(anonymizeColumn && level > 0){
-                        if(colNamesType.get(column).contains("date")){
-                            data[j] = anonymizeValue(dictionary.getIdToString((int)dataSet[line][column]), hierarchy, level);
-                        }
-                        else{
-                            data[j] = (double)dataSet[line][column];
+                if (colNamesType.get(column).contains("int")) {
+
+                    data[j] = doubles[column];
+                    if (anonymizeColumn && level > 0) {
+                        data[j] = anonymizeValue(data[j], hierarchy, level);
+                    }
+
+                    if (data[j] instanceof Double) {
+                        data[j] = ((Double) data[j]).intValue();
+                    }
+                    j++;
+                } else if (colNamesType.get(column).contains("double")) {
+
+                    data[j] = (double) doubles[column];
+                    if (anonymizeColumn && level > 0) {
+                        data[j] = anonymizeValue(data[j], hierarchy, level);
+                    }
+                    j++;
+                } else {
+
+
+                    data[j] = dictionary.getIdToString((int) doubles[column]);
+
+                    if (anonymizeColumn && level > 0) {
+                        if (colNamesType.get(column).contains("date")) {
+                            data[j] = anonymizeValue(dictionary.getIdToString((int) doubles[column]), hierarchy, level);
+                        } else {
+                            data[j] = (double) doubles[column];
                             Double tempValue = (Double) anonymizeValue(data[j], hierarchy, level);
                             String originalValue = hierarchy.getDictionary().getIdToString(tempValue.intValue());
-                            if(originalValue == null){
+                            if (originalValue == null) {
                                 data[j] = hierarchy.getDictionaryData().getIdToString(tempValue.intValue());
-                            }
-                            else{
+                            } else {
                                 data[j] = originalValue;
                             }
                         }
@@ -203,13 +191,13 @@ public class FindSolutions {
             }
             //////////////////////////////////important
             //if values are not suppressed add to statistics
-            if(!isSuppressed(data, whichQid)){
+            if (!isSuppressed(data, whichQid)) {
                 //statistics.add(data);
                 Object data1[] = new Object[1];
                 data1[0] = data[whichQid];
                 statistics.add(data1);
             }
-            
+
         }
         
         
